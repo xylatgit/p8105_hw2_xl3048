@@ -76,5 +76,30 @@ This dataset contains information from the Mr. Trashwheel trash collector in Bal
 * The median number of sports balls found in a dumpster in 2017 was `r trashwheel_df %>% filter(year == 2017) %>% pull(sports_balls) %>% median()`
 * The total precipitation in 2018 was `r precip_df %>% filter(year == 2018) %>% pull(total) %>% sum()` inches.
 
+## Problem 2
+Defind the path to the dataset.
+```{r Define path}
+path_to_data_2 = "./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv"
+```
+
+Read in the dataset.
+```{r read in}
+subway_df =
+  read.csv(
+    "./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv",
+    sep = ",",
+    na.strings=c("")
+    )%>% 
+  janitor::clean_names() %>%
+  subset(select = c(line:route11,entry,vending,entrance_type,ada))%>%
+  mutate(
+    entry = ifelse(entry=="YES",1,2),
+    vending =  ifelse(vending=="YES",1,2)
+  )
+```
+
+The original dataset on NYC Transit has 32 variables. For the homework, we select `r ncol(subway_df)` variables: `r colnames(subway_df)`. The selected variables contains information about subway stations in NYC, including their location, route served, entrance type (stairs/easement), whethere there is vending in the station, and whether it is ADA compliance. 
+
+The variable names of the resulted dataset is cleaned using janitor (all lower-cased, replace space by dash). Variables of route served contains numerous spaces, which are not recognized as NA by R when the dataset is read. Thus, parameter na.string is purposely added to the read.csv function. Further, character vector "entry" and "vending" are converted to logical vector (1=YES, 2=NO).
 
 

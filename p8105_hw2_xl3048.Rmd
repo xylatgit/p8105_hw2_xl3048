@@ -8,6 +8,7 @@ output: github_document
 ```{r setup}
 library(tidyverse)
 library(readxl)
+library(dplyr)
 ```
 
 ## Problem 1
@@ -83,23 +84,68 @@ path_to_data_2 = "./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv"
 ```
 
 Read in the dataset.
-```{r read in}
+```{r read in, message=FALSE}
 subway_df =
-  read.csv(
-    "./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv",
-    sep = ",",
-    na.strings=c("")
+  read_csv(
+    "./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv"
     )%>% 
   janitor::clean_names() %>%
   subset(select = c(line:route11,entry,vending,entrance_type,ada))%>%
   mutate(
     entry = ifelse(entry=="YES",1,2),
-    vending =  ifelse(vending=="YES",1,2)
+    vending =  ifelse(vending=="YES",1,2),
+    line = stringr::str_replace_all(line,fixed(" "),""),
+    station_name = stringr::str_replace_all(station_name,fixed(" "),""),
+    route8=as.character(route8),
+    route9=as.character(route9),
+    route10=as.character(route10),
+    route11=as.character(route11)
   )
 ```
 
-The original dataset on NYC Transit has 32 variables. For the homework, we select `r ncol(subway_df)` variables: `r colnames(subway_df)`. The selected variables contains information about subway stations in NYC, including their location, route served, entrance type (stairs/easement), whethere there is vending in the station, and whether it is ADA compliance. 
+The original dataset on NYC Transit has 32 variables. For the homework, we select `r ncol(subway_df)` variables: `r colnames(subway_df)`. The selected variables contains information about subway stations in NYC, including their location, route served, entrance type (stairs/easement), whether it is vending allowing in the station, and whether it is ADA compliant. 
 
-The variable names of the resulted dataset is cleaned using janitor (all lower-cased, replace space by dash). Variables of route served contains numerous spaces, which are not recognized as NA by R when the dataset is read. Thus, parameter na.string is purposely added to the read.csv function. Further, character vector "entry" and "vending" are converted to logical vector (1=YES, 2=NO).
+The variable names of the resulted dataset is cleaned using janitor (all lower-cased, replace space by dash). Variables of route served contains numerous spaces, which are not recognized as NA by R when the dataset is read. Thus, parameter na.string is purposely added to the read.csv function. Character vector "entry" and "vending" are converted to logical vector (1=YES, 2=NO).Unlike route1 to route7, which use characters to represent route number, the route number for route8 to route11 are numeric. Thus, they are converted to character as the dataset is read.The spaces within line and station names are deleted for potential future usage. 
+
+The dimension of the resulted dataset is `r nrow(subway_df)` rows by `r ncol(subway_df)` columns.
+
+```{r unique station}
+unique_station <- subway_df%>%
+  distinct(line, station_name, .keep_all = TRUE)
+
+```
+There are `r nrow(unique_station)` distinct stations in the dataset.
+
+```{r ADA compliance}
+ada_compliant<- unique_station%>%
+  filter(ada == TRUE)
+```
+There are `r nrow(ada_compliant)` distinct stations with ADA compliance.
+
+```{r proportion of station entrances / exits without vending allow entrance}
+novending_entrance <- subway_df%>%
+  filter(vending == "2",entry == "1")
+novending_ent_exit <- subway_df %>%
+  filter(vending == "2")
+```
+The proportion of station entrances / exits without vending allow entrance is `r nrow(novending_entrance)/nrow(novending_ent_exit)`.
 
 
+```{r}
+route_transit_df =
+  pivot_longer(
+    unique_station,
+    route1:route11,
+    names_to = "route_name",
+    names_prefix = "route",
+    values_to = "route_number"
+ ) 
+unique_A <- route_transit_df %>%
+  filter(route_number == "A")
+
+unique_A_ADA <- unique_A %>%
+  filter(ada == TRUE)
+```
+
+`r nrow(unique_A)` unique stations serve the A train. 
+Of the station that serves the A train, `r nrow(unique_A_ADA)` are ADA compliant.

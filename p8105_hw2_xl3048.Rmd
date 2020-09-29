@@ -78,7 +78,7 @@ This dataset contains information from the Mr. Trashwheel trash collector in Bal
 * The total precipitation in 2018 was `r precip_df %>% filter(year == 2018) %>% pull(total) %>% sum()` inches.
 
 ## Problem 2
-Defind the path to the dataset.
+Define the path to the dataset.
 ```{r Define path}
 path_to_data_2 = "./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv"
 ```
@@ -149,3 +149,9 @@ unique_A_ADA <- unique_A %>%
 
 `r nrow(unique_A)` unique stations serve the A train. 
 Of the station that serves the A train, `r nrow(unique_A_ADA)` are ADA compliant.
+
+## Problem 3
+
+Define the path to the dataset.
+
+

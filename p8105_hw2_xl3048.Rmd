@@ -79,7 +79,7 @@ This dataset contains information from the Mr. Trashwheel trash collector in Bal
 
 ## Problem 2
 Define the path to the dataset.
-```{r Define path}
+```{r Define path_p2}
 path_to_data_2 = "./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv"
 ```
 
@@ -110,7 +110,7 @@ The variable names of the resulted dataset is cleaned using janitor (all lower-c
 The dimension of the resulted dataset is `r nrow(subway_df)` rows by `r ncol(subway_df)` columns.
 
 ```{r unique station}
-unique_station <- subway_df%>%
+unique_station <- subway_df %>%
   distinct(line, station_name, .keep_all = TRUE)
 
 ```
@@ -153,5 +153,28 @@ Of the station that serves the A train, `r nrow(unique_A_ADA)` are ADA compliant
 ## Problem 3
 
 Define the path to the dataset.
+```{r Define path_p3}
+path_to_data_2 = "./data/fivethirtyeight_datasets/"
+```
 
+Read in pols-month.csv.
+```{r Read in pols-month.csv}
+pols_month <- 
+  read.csv("./data/fivethirtyeight_datasets/pols-month.csv") %>%
+  janitor::clean_names() %>%
+  separate(mon, sep = "-", into = c("year","month","day")) %>%
+  mutate(
+    month = as.numeric(month),
+    month = month.name[month],
+    president = case_when(
+      prez_gop == 1 ~ "gop",
+      prez_dem == 1 ~ "dem"
+    )
+  )  %>%
+  select(-day,-starts_with("prez"))
+
+
+
+  
+```
 

@@ -152,13 +152,13 @@ Of the station that serves the A train, `r nrow(unique_A_ADA)` are ADA compliant
 
 ## Problem 3
 
-Define the path to the dataset.
+#### Define the path to the dataset.
 ```{r Define path_p3}
-path_to_data_2 = "./data/fivethirtyeight_datasets/"
+path_to_data_3 = "./data/fivethirtyeight_datasets/"
 ```
 
-Read in pols-month.csv.
-```{r Read in pols-month.csv}
+#### Manipulation of pols-month.csv.
+```{r pols-month.csv}
 pols_month <- 
   read.csv("./data/fivethirtyeight_datasets/pols-month.csv") %>%
   janitor::clean_names() %>%
@@ -172,9 +172,51 @@ pols_month <-
     )
   )  %>%
   select(-day,-starts_with("prez"))
-
-
-
-  
 ```
+
+The dimension of pols-months.csv (after manipulation) is `r nrow(pols_month)` rows (observations) by `r ncol(pols_month)` columns (variables). Variables include {`r colnames(pols_month)`}. Variables represent the number of democrats and republicans as president/governors/senators/representatives at given times. 
+
+
+#### Manipulation of snp.csv.
+```{r snp.csv}
+snp <-
+  read.csv("./data/fivethirtyeight_datasets/snp.csv") %>%
+  janitor::clean_names() %>%
+  separate(date, sep = "/", into = c("month","day","year")) %>%
+  relocate(year, month) %>%
+  mutate(
+    month = as.numeric(month),
+    month = month.name[month]
+  )
+```
+The dimension of snp.csv (after manipulation) is `r nrow(snp)` rows (observations) by `r ncol(snp)` columns (variables). Variables include {`r colnames(snp)`}. The dataset relates to Standard & Poor's stock market index, which are used as a representative measure of stock market.
+
+
+#### Manipulation of unemployment.csv.
+```{r unemployment.csv}
+unemployment <-
+  read.csv("./data/fivethirtyeight_datasets/unemployment.csv")%>%
+    pivot_longer(
+    Jan:Dec,
+    names_to = "month",
+    values_to = "unemployment_rate"
+  ) %>%
+  janitor::clean_names() %>%
+  mutate(
+    month = match(month, month.abb),
+    month = as.numeric(month),
+    month = month.name[month],
+    year = as.character(year)
+  )
+```
+The dimension of unemployment.csv (after manipulation) is `r nrow(unemployment)` rows (observations) by `r ncol(unemployment)` columns (variables). Variables include {`r colnames(unemployment)`}. The dataset contains percentages of unemployment in each month of associated years.
+
+
+#### Join three datasets.
+```{r Join}
+result <-
+  left_join(pols_month,snp, by = c("year", "month")) %>%
+  left_join(y = unemployment, by = c("year", "month"))
+```
+The resulted dataset is computed by left joining three dataset: pols-months.csv, snp.csv, and unemployment.csv. The dimension of the joined dataset is `r nrow(result)` rows (observations) by `r ncol(result)` columns (variables). The key variables used for join is month and year. The dataset consists the the political components, stock market index, and unemployment rate in the month of associated years. Variables included are {`r colnames(result)`}.
 
